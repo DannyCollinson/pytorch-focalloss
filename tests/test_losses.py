@@ -34,7 +34,7 @@ class TestBinaryFocalLoss:
 
         # Custom parameters
         gamma = 3.0
-        alpha = 0.75
+        alpha = tensor(0.75)
         bfl = BinaryFocalLoss(gamma=gamma, alpha=alpha, reduction="sum")
         assert bfl.gamma == gamma
         assert isinstance(bfl.alpha, Tensor)
@@ -69,8 +69,8 @@ class TestBinaryFocalLoss:
         assert isclose(bce_loss, focal_loss)
 
         # With alpha weighting
-        alpha = 1.5
-        bce = BCEWithLogitsLoss(pos_weight=tensor([alpha]))
+        alpha = tensor(1.5)
+        bce = BCEWithLogitsLoss(pos_weight=alpha)
         bfl = BinaryFocalLoss(gamma=0, alpha=alpha)
 
         bce_loss = bce(preds, target)

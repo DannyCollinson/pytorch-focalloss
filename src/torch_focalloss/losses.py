@@ -31,7 +31,7 @@ class BinaryFocalLoss(Module):
     def __init__(
         self,
         gamma: float = 2.0,
-        alpha: float | Tensor | None = None,
+        alpha: Tensor | None = None,
         reduction: str = "mean",
         weight: Tensor | None = None,
         pos_weight: Tensor | None = None,
@@ -45,11 +45,11 @@ class BinaryFocalLoss(Module):
                 `0`, focal loss is identical to `BCEWithLogitsLoss`.
                 As `gamma` grows above 0, focusing strength increases
                 exponentially with `gamma`. Defaults to `2`.
-            alpha (float | Tensor | None, optional): class balancing
-                factor(s). Identical to the `pos_weight` argument to
-                `BCEWithLogitsLoss`. If float or tensor with just one
-                element, it will be used to scale the loss of all
-                positive examples. If tensor with more than one element,
+            alpha (Tensor | None, optional): class balancing factor(s).
+                Identical to the `pos_weight` argument to
+                `BCEWithLogitsLoss`. If tensor with just one element,
+                it will be used to scale the loss of all positive
+                examples. If tensor with more than one element,
                 will be broadcast against any input tensors to scale
                 corresponding positive samples. Note that this alpha is
                 not identical to Lin et al.'s; see below for details.
@@ -107,13 +107,10 @@ class BinaryFocalLoss(Module):
 
         # check alpha
         if alpha is not None:
-            if isinstance(alpha, (int, float)):
-                alpha = Tensor([alpha])
-            else:
-                assert isinstance(alpha, Tensor), (
-                    "Alpha must be float or tensor, "
-                    f"got {alpha} of type {type(alpha)}"
-                )
+            assert isinstance(alpha, Tensor), (
+                "Alpha must be float or tensor, "
+                f"got {alpha} of type {type(alpha)}"
+            )
         elif pos_weight is not None:
             assert isinstance(pos_weight, Tensor), (
                 "pos_weight/alpha must be tensor or None, "
