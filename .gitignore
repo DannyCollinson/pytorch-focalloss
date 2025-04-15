@@ -181,3 +181,6 @@ cython_debug/
 pyrightconfig.json
 
 scratch.ipynb
+
+benchmarking/results/*
+!benchmarking/results/README.md

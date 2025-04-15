@@ -129,7 +129,7 @@ def train_with_loss(
             optimizer.zero_grad()
 
             # Forward pass
-            outputs = model(inputs)
+            outputs = model(inputs).squeeze()
             loss = loss_fn(outputs, targets)
 
             # Backward pass and optimize
@@ -164,7 +164,7 @@ def benchmark_binary_classification() -> dict[str, Any]:
     batch_size = 64
     num_samples = 1000
     learning_rate = 0.001
-    num_epochs = 2
+    num_epochs = 100
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Create synthetic dataset
@@ -236,7 +236,7 @@ def benchmark_multiclass_classification() -> dict[str, Any]:
     num_samples = 1000
     num_classes = 10
     learning_rate = 0.001
-    num_epochs = 2
+    num_epochs = 100
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Create synthetic dataset
@@ -324,6 +324,8 @@ def batch_time_analysis(
 
 def run_training_benchmarks():
     """Run all training loop benchmarks"""
+    # start clock
+    time0 = time.time()
 
     print("\n" + "=" * 80)
     print("BENCHMARKING FOCAL LOSS IN TRAINING LOOPS")
@@ -334,14 +336,22 @@ def run_training_benchmarks():
 
     # Run binary classification benchmark
     binary_results = benchmark_binary_classification()
+    time1 = time.time()
+    print(f"\nBenchmarks took {(time1 - time0):.2f} s.")
 
     # Run multi-class classification benchmark
     multiclass_results = benchmark_multiclass_classification()
+    time2 = time.time()
+    print(f"\nBenchmarks took {(time2 - time1):.2f} s.")
 
     # Analyze batch times
     batch_time_analysis(binary_results, multiclass_results)
 
-    print("\nTraining loop benchmarks complete!")
+    time3 = time.time()
+    print(
+        "\nTraining loop benchmarks complete! "
+        f"Took {(time3 - time0):.2f} s total."
+    )
 
 
 if __name__ == "__main__":

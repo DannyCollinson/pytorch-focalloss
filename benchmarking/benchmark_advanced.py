@@ -11,11 +11,13 @@ This script provides:
 
 import gc
 from collections.abc import Callable, Sequence
+from time import time
 from typing import Any
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import torch
+from matplotlib.figure import Figure
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss
 from torch.utils.benchmark import Timer
 
@@ -49,7 +51,6 @@ def benchmark_binary_focal_loss(
     gammas: list[float],
     feature_dims: list[int] | None = None,
     device: str = "cpu",
-    num_runs: int = 5,
 ):
     """
     Comprehensive benchmark for BinaryFocalLoss
@@ -60,7 +61,6 @@ def benchmark_binary_focal_loss(
         feature_dims: List of feature dimensions for multi-label case
             (None for binary)
         device: Device to run on
-        num_runs: Number of measurement runs for better statistics
 
     Returns:
         DataFrame with benchmark results
@@ -99,7 +99,7 @@ def benchmark_binary_focal_loss(
                     "targets": targets,
                 },
             )
-            bce_measurements = bce_timer.timeit(num_runs)
+            bce_measurements = bce_timer.blocked_autorange()
 
             # Measure memory for BCE (only on CUDA)
             if device == "cuda":
@@ -111,12 +111,6 @@ def benchmark_binary_focal_loss(
             else:
                 bce_memory = 0
 
-            print(
-                "1",
-                torch.tensor(bce_measurements.times).shape,
-                torch.tensor(bce_measurements.times).numel(),
-                bce_measurements.times,
-            )
             results.append(  # type: ignore
                 {
                     "loss_type": "BCEWithLogitsLoss",
@@ -124,10 +118,7 @@ def benchmark_binary_focal_loss(
                     "feature_dim": feature_dim,
                     "gamma": 0,  # Not applicable
                     "time_mean_ms": bce_measurements.mean * 1000,
-                    "time_std_ms": torch.std(
-                        torch.tensor(bce_measurements.times)
-                    )
-                    * 1000,
+                    "time_std_ms": bce_measurements.iqr / 1.349 * 1000,
                     "memory_bytes": bce_memory,
                     "relative_time": 1.0,  # Reference
                     "is_focal": False,
@@ -149,7 +140,7 @@ def benchmark_binary_focal_loss(
                         "targets": targets,
                     },
                 )
-                focal_measurements = focal_timer.timeit(num_runs)
+                focal_measurements = focal_timer.blocked_autorange()
 
                 # Measure memory for focal loss (only on CUDA)
                 if device == "cuda":
@@ -161,12 +152,6 @@ def benchmark_binary_focal_loss(
                 else:
                     focal_memory = 0
 
-                print(
-                    "2",
-                    torch.tensor(focal_measurements.times).shape,
-                    torch.tensor(focal_measurements.times).numel(),
-                    focal_measurements.times,
-                )
                 results.append(  # type: ignore
                     {
                         "loss_type": "BinaryFocalLoss",
@@ -174,10 +159,7 @@ def benchmark_binary_focal_loss(
                         "feature_dim": feature_dim,
                         "gamma": gamma,
                         "time_mean_ms": focal_measurements.mean * 1000,
-                        "time_std_ms": torch.std(
-                            torch.tensor(focal_measurements.times)
-                        )
-                        * 1000,
+                        "time_std_ms": focal_measurements.iqr / 1.349 * 1000,
                         "memory_bytes": focal_memory,
                         "relative_time": focal_measurements.mean
                         / bce_measurements.mean,
@@ -193,7 +175,6 @@ def benchmark_multiclass_focal_loss(
     gammas: list[float],
     class_counts: list[int],
     device: str = "cpu",
-    num_runs: int = 5,
 ):
     """
     Comprehensive benchmark for MultiClassFocalLoss
@@ -203,7 +184,6 @@ def benchmark_multiclass_focal_loss(
         gammas: List of gamma values to test
         class_counts: List of number of classes to test
         device: Device to run on
-        num_runs: Number of measurement runs for better statistics
 
     Returns:
         DataFrame with benchmark results
@@ -233,7 +213,7 @@ def benchmark_multiclass_focal_loss(
                     "targets": targets,
                 },
             )
-            ce_measurements = ce_timer.timeit(num_runs)
+            ce_measurements = ce_timer.blocked_autorange()
 
             # Measure memory for CE (only on CUDA)
             if device == "cuda":
@@ -245,12 +225,6 @@ def benchmark_multiclass_focal_loss(
             else:
                 ce_memory = 0
 
-            print(
-                "3",
-                torch.tensor(ce_measurements.times).shape,
-                torch.tensor(ce_measurements.times).numel(),
-                ce_measurements.times,
-            )
             results.append(  # type: ignore
                 {
                     "loss_type": "CrossEntropyLoss",
@@ -258,10 +232,7 @@ def benchmark_multiclass_focal_loss(
                     "num_classes": num_classes,
                     "gamma": 0,  # Not applicable
                     "time_mean_ms": ce_measurements.mean * 1000,
-                    "time_std_ms": torch.std(
-                        torch.tensor(ce_measurements.times)
-                    )
-                    * 1000,
+                    "time_std_ms": ce_measurements.iqr / 1.349 * 1000,
                     "memory_bytes": ce_memory,
                     "relative_time": 1.0,  # Reference
                     "is_focal": False,
@@ -281,7 +252,7 @@ def benchmark_multiclass_focal_loss(
                         "targets": targets,
                     },
                 )
-                focal_measurements = focal_timer.timeit(num_runs)
+                focal_measurements = focal_timer.blocked_autorange()
 
                 # Measure memory for focal loss (only on CUDA)
                 if device == "cuda":
@@ -293,12 +264,6 @@ def benchmark_multiclass_focal_loss(
                 else:
                     focal_memory = 0
 
-                print(
-                    "4",
-                    torch.tensor(focal_measurements.times).shape,
-                    torch.tensor(focal_measurements.times).numel(),
-                    focal_measurements.times,
-                )
                 results.append(  # type: ignore
                     {
                         "loss_type": "MultiClassFocalLoss",
@@ -306,10 +271,7 @@ def benchmark_multiclass_focal_loss(
                         "num_classes": num_classes,
                         "gamma": gamma,
                         "time_mean_ms": focal_measurements.mean * 1000,
-                        "time_std_ms": torch.std(
-                            torch.tensor(focal_measurements.times)
-                        )
-                        * 1000,
+                        "time_std_ms": focal_measurements.iqr / 1.349 * 1000,
                         "memory_bytes": focal_memory,
                         "relative_time": focal_measurements.mean
                         / ce_measurements.mean,
@@ -322,7 +284,7 @@ def benchmark_multiclass_focal_loss(
 
 def plot_benchmark_results(
     binary_results: Any, multiclass_results: Any, save_path: str | None = None
-):
+) -> Figure:
     """Create plots from benchmark results"""
     # Set up the figure layout
     fig = plt.figure(figsize=(15, 12))  # type: ignore
@@ -637,16 +599,19 @@ def plot_benchmark_results(
         fontsize=16,
     )
 
-    # Save or show the plot
+    # Save plot if needed
     if save_path:
         plt.savefig(save_path, dpi=300, bbox_inches="tight")  # type: ignore
 
-    plt.tight_layout(rect=[0, 0.03, 1, 0.97])  # type: ignore
-    plt.show()  # type: ignore
+    # return plot
+    return fig
 
 
 def run_advanced_benchmarks():
     """Run advanced benchmarks"""
+    # start clock
+    time0 = time()
+
     # Determine if CUDA is available
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Running benchmarks on: {device}")
@@ -669,6 +634,8 @@ def run_advanced_benchmarks():
         feature_dims=binary_feature_dims,
         device=device,
     )
+    time1 = time()
+    print(f"Benchmarks took {(time1 - time0):.2f} s.")
 
     print("\nRunning multi-class classification benchmarks...")
     multiclass_results = benchmark_multiclass_focal_loss(
@@ -677,27 +644,33 @@ def run_advanced_benchmarks():
         class_counts=multiclass_class_counts,
         device=device,
     )
+    time2 = time()
+    print(f"Benchmarks took {(time2 - time1):.2f} s.")
 
     # Save results to CSV
     binary_results.to_csv(
-        "results/binary_focal_loss_benchmark.csv", index=False
+        "./benchmarking/results/binary_focal_loss_benchmark.csv", index=False
     )
     multiclass_results.to_csv(
-        "results/multiclass_focal_loss_benchmark.csv", index=False
+        "./benchmarking/results/multiclass_focal_loss_benchmark.csv",
+        index=False,
     )
 
     # Plot results
     try:
-        plot_benchmark_results(
+        fig = plot_benchmark_results(
             binary_results,
             multiclass_results,
-            save_path="results/focal_loss_benchmark_results.png",
+            save_path=(
+                "./benchmarking/results/focal_loss_benchmark_results.png"
+            ),
         )
         print(
             "\nBenchmark plots saved to "
-            "'results/focal_loss_benchmark_results.png'"
+            "'./benchmarking/results/focal_loss_benchmark_results.png'"
         )
     except Exception as e:  # pylint: disable=broad-exception-caught
+        fig = None
         print(f"\nFailed to generate plots: {e}")
 
     # Print summary
@@ -765,8 +738,19 @@ def run_advanced_benchmarks():
                 f"- {loss_type} (gamma={gamma}): "
                 f"{rel_time:.2f}x slower than CE"
             )
+    time3 = time()
+    print(
+        "\nBenchmarking complete! "
+        f"Took {(time3 - time0):.2f} s total."
+        "\n\nResults saved to CSV files in './benchmarking/results/'."
+        "\nFigure saved as "
+        "'./benchmarking/results/focal_loss_benchmark_results.png'."
+        "\n\nIf open, close figure to terminate script."
+    )
 
-    print("\nBenchmark complete! Results saved to CSV files.")
+    # show figure if available
+    if fig is not None:
+        plt.show(block=True)  # type: ignore
 
 
 if __name__ == "__main__":

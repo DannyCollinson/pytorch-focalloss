@@ -10,6 +10,7 @@ Benchmarks are run with different batch sizes
 and with varying values of gamma.
 """
 
+from time import time
 from typing import Any
 
 import torch
@@ -128,6 +129,9 @@ def benchmark_multiclass_losses(
 
 def run_benchmarks():
     """Run all benchmarks and display results"""
+    # start clock
+    time0 = time()
+
     print("=" * 80)
     print("BENCHMARKING TORCH_FOCALLOSS")
     print("=" * 80)
@@ -165,6 +169,9 @@ def run_benchmarks():
                 f"({result.mean / bce_result.mean:.2f}x slower)"
             )
 
+    time1 = time()
+    print(f"\nBenchmark took {(time1 - time0):.2f} s.")
+
     # Multi-label classification benchmarks
     print(
         "\nBENCHMARK: MULTI-LABEL CLASSIFICATION "
@@ -198,6 +205,9 @@ def run_benchmarks():
                 f"({result.mean / bce_result.mean:.2f}x slower)"
             )
 
+    time2 = time()
+    print(f"\nBenchmark took {(time2 - time1):.2f} s.")
+
     # Multi-class classification benchmarks
     print(
         "\nBENCHMARK: MULTI-CLASS CLASSIFICATION "
@@ -228,6 +238,9 @@ def run_benchmarks():
                 f"({result.mean / ce_result.mean:.2f}x slower)"
             )
 
+    time3 = time()
+    print(f"\nBenchmark took {(time3 - time2):.2f} s.")
+
     # Different class counts for multi-class
     print(
         "\nBENCHMARK: VARYING CLASS COUNTS "
@@ -257,6 +270,12 @@ def run_benchmarks():
                 f"{result.mean * 1000:.3f} ms "
                 f"({result.mean / ce_result.mean:.2f}x slower)"
             )
+
+    time4 = time()
+    print(f"\nBenchmark took {(time4 - time3):.2f} s.")
+
+    print("\n", "-" * 80)
+    print(f"Benchmarking took {(time4 - time0):.2f} s total.")
 
 
 if __name__ == "__main__":
