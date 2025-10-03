@@ -174,7 +174,7 @@ class MultiClassFocalLoss(Module):
     """
     Multi-class focal loss implementation inspired by "Focal Loss for
     Dense Object Detection" (https://arxiv.org/abs/1708.02002) and
-    addapted to support classification tasks with more than two classes
+    adapted to support classification tasks with more than two classes.
 
     Class index targets should be prefered whenever possible to class
     probability targets. This does not include using the
@@ -203,7 +203,7 @@ class MultiClassFocalLoss(Module):
         sum_first: bool = True,
     ) -> None:
         """
-        Initialize multi-class focal loss function
+        Initialize multi-class focal loss function.
 
         Args:
             gamma (float, optional): focusing parameter that determines

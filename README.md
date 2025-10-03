@@ -14,7 +14,7 @@ pip install pytorch-focalloss
 
 The python package is importable as `torch_focalloss`. The only components in the package are the `BinaryFocalLoss` and `MultiClassFocalLoss` classes, which have interfaces that allow them to be drop-in replacements for PyTorch's `BCEWithLogitsLoss` and `CrossEntropyLoss` classes, respectively. All of the same keyword arguments are supported, as well as the focusing parameter $\gamma$ (gamma), and they function just like any other PyTorch loss function.
 
-Benchmarks for comparing run times and memory usage of the focal loss implementations compared to their standard counterparts can be run using `python ./benchmarking/benchmark_X.py` from the repository's root directory.
+Benchmarks for comparing run times and memory usage of the focal loss implementations compared to their standard counterparts can be run using `python ./benchmarking/benchmark_X.py` (where `X` is one of `basic`, `advanced`, or `training`) from the repository's root directory.
 
 ### About
 
@@ -38,7 +38,7 @@ Note that one difference from `CrossEntropyLoss` is that if all samples have tar
 
 See below or check out `DEMO.ipynb` above for a demonstration of how the binary and multi-class focal losses work and compare to the standard cross entropy versions.
 
-There are also benchmarks available to run using `python ./benchmarking/benchmark_X.py` from the repository's root directory that can compare the run times and memory usage of the focal loss implementations compared to their standard counterparts.
+There are also benchmarks available to run using `python ./benchmarking/benchmark_X.py` (where `X` is one of `basic`, `advanced`, or `training`) from the repository's root directory that can compare the run times and memory usage of the focal loss implementations compared to their standard counterparts.
 
 
 ```python
